@@ -1,0 +1,57 @@
+name: Gemini AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Run Gemini Code Review
+        uses: sshnaidm/gemini-code-review-action@v2
+        with:
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: gemini-2.5-flash
+          thinking: dynamic
+          prompt: |
+            Please perform a comprehensive code review on this pull request.
+
+            Focus your feedback heavily on:
+            - PHP errors, warnings, and fatal errors
+            - WordPress coding standard issues
+            - Parent/child theme enqueue problems
+            - Incorrect use of get_template_directory_uri() vs get_stylesheet_directory_uri()
+            - Incorrect wp_enqueue_style() or wp_enqueue_script() usage
+            - Missing dependencies, versioning, filemtime() issues
+            - Security issues:
+              - Missing esc_html()
+              - Missing esc_url()
+              - Missing esc_attr()
+              - Missing wp_kses_post()
+              - Missing nonce verification
+              - Unsafe $_POST / $_GET usage
+            - ACF field errors:
+              - Missing field checks
+              - Empty image/link/relationship fields
+              - Incorrect return format handling
+            - Inline JavaScript/jQuery issues
+            - SCSS/CSS errors
+            - Logical errors and edge cases
+
+            Provide your response with:
+            - File name
+            - Line or section
+            - Issue
+            - Risk level: High / Medium / Low
+            - Suggested fix
+            - Inline replacement suggestions where appropriate
